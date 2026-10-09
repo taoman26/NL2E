@@ -10,6 +10,7 @@ services:
     volumes:
       - ./KHCoder:/KHCoder
       - ${HOME}/.Xauthority:/root/.Xauthority
+      - ${NL2E_DATA_DIR:-${HOME}}:/host
     network_mode: host
   mysql:
     image: 'sinby/mysql-for-khcoder:8.0.27'
