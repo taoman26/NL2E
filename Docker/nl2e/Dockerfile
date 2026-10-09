@@ -32,6 +32,7 @@ RUN apt-get install -y x11-apps \
       libfile-bom-perl                 \
       libgraphics-colorutils-perl      \
       libgsl-dev                       \
+      libgmp-dev libmpfr-dev           \
       libjcode-perl                    \
       liblingua-sentence-perl          \
       libmodule-build-tiny-perl        \
@@ -98,10 +99,15 @@ ENV LC_ALL=ja_JP.UTF-8
 
 COPY mecabrc /etc/mecabrc
 RUN cpanm Lingua::JA::Regular::Unicode Statistics::ChisqIndep File::Copy::Recursive
-RUN Rscript -e 'install.packages(c("ggnetwork", "som", "topicmodels"))'
+RUN Rscript -e 'install.packages(c("som", "topicmodels"))'
+# R 3.6 では最新の CRAN から ggnetwork の依存 (statnet.common 等) を入れられないため、当時のスナップショットを使う
+RUN Rscript -e 'install.packages(c("ggnetwork", "smacof", "networkD3", "devEMF", "RSVGTipsDevice", "ldatuning"), repos = "https://packagemanager.posit.co/cran/2020-06-01")'
 
 RUN cpanm DOY/Spreadsheet-ParseXLSX-0.17.tar.gz
 RUN Rscript -e 'install.packages("http://cran.r-project.org/src/contrib/Archive/ggplot2/ggplot2_2.2.1.tar.gz", repos=NULL, type="source")'
+
+# install.packages は失敗してもビルドが止まらないため、読み込めるか確認する
+RUN Rscript -e 'for (p in c("ggnetwork", "smacof", "networkD3", "devEMF", "RSVGTipsDevice", "ldatuning", "som", "topicmodels", "ggplot2")) library(p, character.only = TRUE)'
 
 COPY entrypoint.sh /
 
