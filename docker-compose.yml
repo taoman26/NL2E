@@ -1,15 +1,16 @@
 version: '3.5'
 services:
   nl2e:
-    image: 'sinby/nl2e:v0.1'
-    environment:
-        DISPLAY: $DISPLAY
+    build: ./Docker/nl2e
+    container_name: nl2e
     depends_on:
-        - mysql
+      - mysql
+    environment:
+      DISPLAY: ${DISPLAY}
     volumes:
-      - './KHCoder:/KHCoder'
-      - '$HOME/.Xauthority:/root/.Xauthority'
-    network_mode: "host"
+      - ./KHCoder:/KHCoder
+      - ${HOME}/.Xauthority:/root/.Xauthority
+    network_mode: host
   mysql:
     image: 'sinby/mysql-for-khcoder:8.0.27'
     cap_add:

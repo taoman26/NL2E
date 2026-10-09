@@ -1,69 +1,247 @@
 # KH Coder in Docker
-Docker の KH Coder を提供した。
-docker として host タイプのネットワークを使っている事に注意。
 
-## 必要ファイルのダウンロード
+KH Coder を Docker 上で実行するための環境です。
 
-必要なファイル群。
+本リポジトリは、[sinchiba-backyard/NL2E](https://github.com/sinchiba-backyard/NL2E) をフォークし、最近の Linux 環境や Docker Compose で利用しやすいように調整した。
+- KH Coder を Docker で実行
+- KH Coder 本体は Git Submodule で管理
+- KH Coder 最新版へ追従可能
+- MySQL を Docker コンテナで実行
+- 不足していた Perl モジュールを Docker イメージへ組み込み済み
+- コンテナ内での追加セットアップ不要
 
-```
-$ git clone https://github.com/sinchiba-backyard/NL2E.git
-$ cd NL2E
-$ git submodule init
-$ git submodule update
-```
+---
 
-KH Coderを最新版に更新。
+# 動作確認環境
 
-```
-$ git submodule update --remote
-```
+- Ubuntu 22.04
+- Bodhi Linux 7.0.0
+- Docker Compose V2（Ubuntu 22.04 では `sudo apt install docker-compose-v2`）
 
-チュートリアル用ファイル。
+---
 
-```
-$ wget https://khcoder.net/tutorial_data_3x.zip
-$ unzip -x tutorial_data_3x.zip -d KHCoder/khcoder/
-```
+# 初回セットアップ
 
-## 起動と設定
+## リポジトリ取得
 
-```
-$ xhost +local:docker
-$ docker-compose up
+```bash
+git clone https://github.com/taoman26/NL2E.git
+cd NL2E
 ```
 
-xeyesの目玉が表示され、「/usr/sbin/mysqld: ready for connections. Version...」の表示が出れば成功。以降の作業は別ターミナルで。
+## KH Coder の取得
 
-```
-$ /bin/bash do.sh
-```
+KH Coder 本体は Git Submodule として管理されています。
 
-MySQLの設定後、KH Coderが起動する。起動したら[チュートリアル](https://khcoder.net/tutorial.html)を試してみよう。
-
-## 補遺
-
-日常利用のコマンド。一例。
-
-```
-$ cd NL2E
-$ docker-compose up -d                  # dockerコンテナ起動
-$ docker-compose ps                     # dockerコンテナ起動確認（任意）
-$ docker exec -it nl2e_nl2e_1 /bin/bash # dockerに入る
-# cd /KHCoder/khcoder                   # KH Coderのフォルダに移動して
-# perl kh_coder.pl                      # KH Coder起動
-# exit                                  # dockerから出る
-$ docker-compose down                   # dockerコンテナ終了
+```bash
+git submodule update --init --recursive
 ```
 
-## macOSの場合
+## Docker イメージ作成
 
-- [XQuartz](https://www.xquartz.org/)をインストールする
-- XQuartzの環境設定「セキュリティ」タブで、「接続を認証」のチェックを外し、「ネットワーク・クライアントからの接続を許可」にチェックを入れ、XQuartzを再起動する
-- docker-compose.ymlの「DISPLAY: $DISPLAY」という箇所を「DISPLAY: host.docker.internal:0」に変更して上書き保存
-- コンテナ名の「nl2e_nl2e_1」が、「nl2e-nl2e-1」になるなど、コンテナ名のアンダーバーがハイフンにかわることがある
+```bash
+docker compose build
+```
 
-参考URL
-https://zenn.dev/hogenishi/articles/6bcffa389bcfb6
+環境によっては作成に数十分かかる場合があります。
 
-![khcoder](khcoder.png)
+---
+
+# KH Coder の更新
+
+KH Coder 本体を最新版へ更新する場合は以下を実行してください。
+
+```bash
+git submodule update --recursive --remote
+docker compose build
+```
+
+NL2E 自体に変更があった場合は、先にリポジトリを更新します。
+
+```bash
+git pull
+git submodule update --recursive --remote
+docker compose build
+```
+
+---
+
+# チュートリアルデータの取得
+
+KH Coder 公式チュートリアルを試す場合はデータをダウンロードします。
+
+```bash
+wget https://khcoder.net/tutorial_data_3x.zip
+unzip tutorial_data_3x.zip -d KHCoder/khcoder/
+```
+
+---
+
+# 起動
+
+```bash
+./do.sh
+```
+
+`do.sh` は以下を自動で行います。
+
+1. X11 接続の許可（`xhost +local:docker`）
+2. Docker コンテナの起動（`docker compose up -d`）
+3. MySQL の起動待ちと、初回のみ `khcoder` データベースの作成
+4. KH Coder の起動
+5. KH Coder を閉じたら Docker コンテナを停止（`docker compose down`）
+
+MySQL の接続設定は `coder.ini` で配置されるため、手動設定は不要です。
+
+起動後は KH Coder のチュートリアルを試してみましょう。
+
+- https://khcoder.net/tutorial.html
+
+---
+
+# 手動で操作する場合
+
+`do.sh` を使わず個別に操作することもできます。
+
+```bash
+xhost +local:docker
+docker compose up -d
+docker exec -it nl2e /bin/bash
+cd /KHCoder/khcoder
+perl kh_coder.pl
+exit
+docker compose down
+```
+
+状態確認は `docker compose ps` で行えます。
+
+---
+
+# Docker Compose の補足
+
+本環境では GUI アプリケーション表示のために Host Network を使用しています。
+
+```yaml
+network_mode: host
+```
+
+Linux 環境を前提としています。
+
+---
+
+# トラブルシューティング
+
+## 「Can't locate File/Copy/Recursive.pm」
+
+古い Docker イメージを利用している可能性があります。
+
+以下を実行してください。
+
+```bash
+docker compose build --no-cache
+```
+
+---
+
+## 「Can't open display」
+
+X11 接続が許可されていない可能性があります。
+
+```bash
+xhost +local:docker
+```
+
+を実行した後に再度起動してください。
+
+---
+
+## MySQL に接続できない
+
+コンテナの起動状態を確認してください。
+
+```bash
+docker compose ps
+```
+
+ログ確認
+
+```bash
+docker compose logs mysql
+```
+
+---
+
+# macOS
+
+macOS を利用する場合は XQuartz が必要です。
+
+## XQuartz インストール
+
+- https://www.xquartz.org/
+
+## XQuartz 設定
+
+「環境設定」→「セキュリティ」
+
+- 「接続を認証」のチェックを外す
+- 「ネットワーク・クライアントからの接続を許可」を有効化
+
+設定後に XQuartz を再起動してください。
+
+## docker-compose.yml 修正
+
+```yaml
+DISPLAY: ${DISPLAY}
+```
+
+を
+
+```yaml
+DISPLAY: host.docker.internal:0
+```
+
+へ変更します。
+
+---
+
+# コンテナ名について
+
+Docker Compose V2 ではコンテナ名の命名規則が変更されています。
+
+例えば
+
+```text
+nl2e_nl2e_1
+```
+
+が
+
+```text
+nl2e-nl2e-1
+```
+
+になる場合があります。
+
+本フォーク版では `container_name: nl2e` を使用しているため、以下のコマンドを利用できます。
+
+```bash
+docker exec -it nl2e /bin/bash
+```
+
+---
+
+# スクリーンショット
+
+![KH Coder](khcoder.png)
+
+---
+
+# 謝辞
+
+本リポジトリは以下の成果物を利用しています。
+
+- KH Coder  
+  https://khcoder.net/
+
+- 原版 NL2E  
+  https://github.com/sinchiba-backyard/NL2E
