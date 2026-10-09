@@ -93,6 +93,8 @@ RUN apt-get install -y x11-apps \
     && rm -rf /var/cache/apt/archives/* \
     && rm -rf /var/lib/apt/lists/*
 RUN update-locale LANG=ja_JP.UTF-8
+ENV LANG=ja_JP.UTF-8
+ENV LC_ALL=ja_JP.UTF-8
 
 COPY mecabrc /etc/mecabrc
 RUN cpanm Lingua::JA::Regular::Unicode Statistics::ChisqIndep File::Copy::Recursive
