@@ -11,6 +11,8 @@ services:
       - ./KHCoder:/KHCoder
       - ${HOME}/.Xauthority:/root/.Xauthority
       - ${NL2E_DATA_DIR:-${HOME}}:/host
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     network_mode: host
   mysql:
     image: 'sinby/mysql-for-khcoder:8.0.27'
