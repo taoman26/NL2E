@@ -95,7 +95,7 @@ RUN apt-get install -y x11-apps \
 RUN update-locale LANG=ja_JP.UTF-8
 
 COPY mecabrc /etc/mecabrc
-RUN cpanm Lingua::JA::Regular::Unicode Statistics::ChisqIndep
+RUN cpanm Lingua::JA::Regular::Unicode Statistics::ChisqIndep File::Copy::Recursive
 RUN Rscript -e 'install.packages(c("ggnetwork", "som", "topicmodels"))'
 
 RUN cpanm DOY/Spreadsheet-ParseXLSX-0.17.tar.gz
