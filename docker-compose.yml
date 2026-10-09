@@ -7,6 +7,7 @@ services:
       - mysql
     environment:
       DISPLAY: ${DISPLAY}
+      XMODIFIERS: ${XMODIFIERS:-}
     volumes:
       - ./KHCoder:/KHCoder
       - ${HOME}/.Xauthority:/root/.Xauthority
