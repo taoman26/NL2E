@@ -109,6 +109,13 @@ RUN Rscript -e 'install.packages("http://cran.r-project.org/src/contrib/Archive/
 # install.packages は失敗してもビルドが止まらないため、読み込めるか確認する
 RUN Rscript -e 'for (p in c("ggnetwork", "smacof", "networkD3", "devEMF", "RSVGTipsDevice", "ldatuning", "som", "topicmodels", "ggplot2")) library(p, character.only = TRUE)'
 
+# Ubuntu 20.04 同梱の Perl/Tk 804.033 は XIM の確定文字列を取得できず、日本語入力が反映されない。
+# 804.036 に入れ替える（ビルドに必要な -dev パッケージも導入する）
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc libx11-dev libxft-dev libpng-dev libjpeg-dev zlib1g-dev libfreetype6-dev libfontconfig1-dev \
+    && cpanm --notest SREZIC/Tk-804.036.tar.gz \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY entrypoint.sh /
 
 CMD ["/entrypoint.sh"]
