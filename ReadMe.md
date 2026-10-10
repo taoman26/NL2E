@@ -124,8 +124,7 @@ NL2E_DATA_DIR=/path/to/data ./do.sh
 xhost +local:docker
 docker compose up -d
 docker exec -it nl2e /bin/bash
-cd /KHCoder/khcoder
-perl kh_coder.pl
+khcoder
 exit
 docker compose down
 ```

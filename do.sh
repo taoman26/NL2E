@@ -35,4 +35,4 @@ fi
 docker cp coder.ini $SERVICE:/KHCoder/khcoder/config/
 
 # KH Coder 起動（終了するまでここで待機）
-docker compose exec $SERVICE bash -c 'cd /KHCoder/khcoder && perl kh_coder.pl'
+docker compose exec $SERVICE khcoder

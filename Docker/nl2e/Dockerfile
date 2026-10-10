@@ -117,5 +117,6 @@ RUN apt-get update \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /
+COPY khcoder.sh /usr/local/bin/khcoder
 
 CMD ["/entrypoint.sh"]
